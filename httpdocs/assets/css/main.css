@@ -1,0 +1,46 @@
+/* AVANT */
+body{font-family:Inter,Arial,sans-serif;background:#fff;color:#111;text-align:center;padding-top:3rem}
+/* APRÈS */
+body{font-family:Inter,Arial,sans-serif;background:#fff;color:#111;text-align:left;padding-top:3rem}
+
+/* Garde .panel et .bubble de base */
+.panel { overflow: visible; }
+.bubble {
+  position: relative;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 12px 14px;
+}
+
+
+/* Flèche dédiée seulement au prof */
+.bubble-prof {
+  position: relative;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 12px 14px;
+  text-align: left;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,.03);
+}
+.bubble-prof::before,
+.bubble-prof::after {
+  content: "";
+  position: absolute;
+  top: 18px;
+  left: -14px;
+  width: 0; height: 0;
+  border-style: solid;
+  pointer-events: none;
+}
+.bubble-prof::before {
+  border-width: 9px 13px 9px 0;
+  border-color: transparent #e5e7eb transparent transparent;
+}
+.bubble-prof::after {
+  left: -12px;
+  border-width: 8px 12px 8px 0;
+  border-color: transparent #fff transparent transparent;
+}
