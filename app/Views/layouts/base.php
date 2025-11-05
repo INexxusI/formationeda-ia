@@ -73,7 +73,7 @@
       <div class="d-flex gap-3 small">
         <span>Thème clair</span>
         <a class="link-secondary text-decoration-none" href="https://getbootstrap.com/">Bootstrap 5</a>
-		    <small class="text-muted">© FormationEDA – Prototype JRPG (test GitHub ✅)</small>
+		    <small class="text-muted">© FormationEDA – Prototype JRPG 2 (test GitHub ✅)</small>
       </div>
     </div>
 	  <small class="text-muted">© FormationEDA – Prototype JRPG (test GitHub ✅)</small>
