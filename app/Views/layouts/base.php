@@ -75,7 +75,6 @@
         <a class="link-secondary text-decoration-none" href="https://getbootstrap.com/">Bootstrap 5</a>
       </div>
     </div>
-	  <small class="text-muted">© FormationEDA – Prototype JRPG (test GitHub ✅)</small>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
