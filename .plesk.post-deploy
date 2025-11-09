@@ -1,0 +1,17 @@
+#!/bin/bash
+set -e
+
+# On est exécuté dans /git-build
+ROOT="$(cd .. && pwd)"   # <- racine de l’abonnement Plesk
+
+echo "Déploiement depuis git-build vers les dossiers de production..."
+
+# Crée les dossiers cibles s’ils n’existent pas
+mkdir -p "$ROOT/httpdocs" "$ROOT/app" "$ROOT/config"
+
+# Synchronise (miroir) chaque dossier du repo vers sa destination
+rsync -a --delete "httpdocs/" "$ROOT/httpdocs/"
+rsync -a --delete "app/"       "$ROOT/app/"
+rsync -a --delete "config/"    "$ROOT/config/"
+
+echo "Déploiement terminé avec succès."
