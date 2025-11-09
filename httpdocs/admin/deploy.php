@@ -1,71 +1,52 @@
 <?php
-// ===== 0) CONFIG =====
-$TOKEN_EXPECTED = 'fb_2025_test_937abX';
-$LOG_FILE = __DIR__ . '/deploy.log';
-$REPO_DIR = dirname(__DIR__); // ex: remonte d'un niveau depuis /admin vers la racine du projet
+// ===== Config =====
+$TOKEN = 'fb_2025_test_937abX'; // garde ton token
+$LOG   = __DIR__ . '/deploy.log';
 
-// ===== 1) LOG HIT =====
-function logl($msg){
-  file_put_contents($GLOBALS['LOG_FILE'], date('c').' '.$msg."\n", FILE_APPEND);
+// ===== Utils =====
+function logl($m){ file_put_contents($GLOBALS['LOG'], date('c')." $m\n", FILE_APPEND); }
+error_reporting(E_ALL); ini_set('display_errors', 1);
+
+// ===== Auth (GET ou POST) =====
+$token = $_GET['token'] ?? $_POST['token'] ?? '';
+if ($token !== $TOKEN) { http_response_code(401); echo "Bad token"; logl('401 bad token'); exit; }
+
+// (Optionnel) petite attente pour laisser Plesk finir de cloner dans /git-build
+// usleep(800000); // 0.8s
+// sleep(1);
+
+// ===== Chemins =====
+// Script = /httpdocs/admin
+$scriptDir = __DIR__;
+$httpdocs  = dirname($scriptDir);        // /httpdocs
+$root      = dirname($httpdocs);         // / (racine vhost)
+$build     = $root . '/git-build';       // /git-build
+
+// ===== Copie récursive =====
+function rr_mkdir($dir){ if(!is_dir($dir)) mkdir($dir,0755,true); }
+function rr_copy($src,$dst){
+  if(!is_dir($src)) { logl("skip: $src absent"); return; }
+  rr_mkdir($dst);
+  foreach(scandir($src) as $f){
+    if($f==='.'||$f==='..') continue;
+    $s=$src.DIRECTORY_SEPARATOR.$f;
+    $d=$dst.DIRECTORY_SEPARATOR.$f;
+    if(is_dir($s)) rr_copy($s,$d);
+    else { if(!copy($s,$d)) logl("copy FAIL $s -> $d"); else @touch($d,filemtime($s)); }
+  }
 }
-logl('hit '.$_SERVER['REQUEST_METHOD'].' '.$_SERVER['REQUEST_URI']);
 
-// ===== 2) MÉTHODE POST OBLIGATOIRE =====
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-  http_response_code(405);
-  logl('405 not POST');
-  exit('Method Not Allowed');
+// ===== Déploiement =====
+logl("deploy start: ROOT=$root BUILD=$build");
+$targets = [
+  'httpdocs' => $root.'/httpdocs',
+  'app'      => $root.'/app',
+  'config'   => $root.'/config',
+];
+foreach($targets as $rel=>$dst){
+  $src = $build.'/'.$rel;
+  logl("SYNC $src -> $dst");
+  rr_copy($src,$dst);
 }
-
-// ===== 3) TOKEN EN QUERY =====
-$token = $_GET['token'] ?? '';
-if (!hash_equals($TOKEN_EXPECTED, $token)) {
-  http_response_code(401);
-  logl('401 bad token');
-  exit('Bad token');
-}
-
-// ===== 4) LIRE LE PAYLOAD JSON =====
-$raw = file_get_contents('php://input'); // JSON, pas $_POST !
-$event = $_SERVER['HTTP_X_GITHUB_EVENT'] ?? $_SERVER['HTTP_X_GITLAB_EVENT'] ?? 'unknown';
-logl('payload '.strlen($raw).' bytes; event='.$event);
-
-// (Optionnel) tu peux décoder:
-// $data = json_decode($raw, true);
-
-// ===== 5) RÉPONDRE TOUT DE SUITE (<= 2s) =====
-ignore_user_abort(true);
-header('Content-Type: text/plain');
-http_response_code(200);
-echo "OK\n";
-flush(); // envoie la réponse à GitHub
-
-// ===== 6) DÉPLOIEMENT EN ARRIÈRE-PLAN =====
-// Lance un script shell détaché pour éviter le timeout
-$cmd = <<<BASH
-#!/bin/bash
-cd "$REPO_DIR"
-{
-  echo "---- $(date -Is) DEPLOY START ----"
-  whoami
-  pwd
-  which git
-  git rev-parse --show-toplevel 2>&1
-  git fetch --all 2>&1
-  git reset --hard origin/main 2>&1   # ou 'git pull --rebase'
-  # composer install --no-interaction --no-dev --prefer-dist 2>&1
-  # npm ci && npm run build 2>&1
-  echo "---- $(date -Is) DEPLOY END ----"
-} >> "$LOG_FILE" 2>&1
-BASH;
-
-$tmp = tempnam(sys_get_temp_dir(), 'deploy_');
-file_put_contents($tmp, $cmd);
-chmod($tmp, 0755);
-
-// Détaché (ne pas bloquer PHP) :
-if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-  pclose(popen("start /B ".$tmp, "r"));
-} else {
-  exec($tmp." > /dev/null 2>&1 &");
-}
+logl("deploy end");
+header('Content-Type: text/plain'); echo "OK\n";
