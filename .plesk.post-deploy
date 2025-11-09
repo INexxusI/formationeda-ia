@@ -1,11 +1,5 @@
 #!/bin/sh
 set -e
-
-# Exécuté dans /git-build
-ROOT="$(cd .. && pwd)"
-
-mkdir -p "$ROOT/httpdocs" "$ROOT/app" "$ROOT/config"
-/bin/cp -a "httpdocs/." "$ROOT/httpdocs/"
-/bin/cp -a "app/."      "$ROOT/app/"
-/bin/cp -a "config/."   "$ROOT/config/"
+# On est exécuté dans /git-build
+date > ../_HOOK_A_BIEN_TOURNE.txt
 echo "OK"
