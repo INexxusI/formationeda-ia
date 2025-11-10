@@ -51,7 +51,6 @@ $TARGETS = [
     'preserve' => [
       'admin/',        // scripts de déploiement
       '.well-known/',  // ACME / Let's Encrypt
-      '.htaccess',     // mets-le ici SEULEMENT s’il n’est pas dans le repo
       '.user.ini',     // si présent
       'uploads/',      // si tu as des uploads
       'storage/',      // si tu en as
@@ -165,4 +164,5 @@ foreach ($TARGETS as $t) {
 }
 
 logl("deploy end (mirror)");
+
 
