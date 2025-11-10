@@ -5,6 +5,10 @@
  * - SUPPRIME ce qui n’est plus dans le dépôt (hors "preserve")
  * - Répond "OK" immédiatement, puis logue tout dans deploy.log
  */
+header('Content-Type: text/plain');
+echo "OK\n";
+if (function_exists('fastcgi_finish_request')) { fastcgi_finish_request(); }
+ignore_user_abort(true);
 
 declare(strict_types=1);
 error_reporting(E_ALL);
@@ -164,6 +168,7 @@ foreach ($TARGETS as $t) {
 }
 
 logl("deploy end (mirror)");
+
 
 
 
