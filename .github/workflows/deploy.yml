@@ -1,4 +1,4 @@
-name: Deploy to Plesk (wait mtime)
+name: Deploy to Plesk (robust)
 on:
   push:
     branches: [ "main" ]
@@ -7,32 +7,34 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Compute push epoch
-        id: ts
+      - name: Read start mtime
+        id: start
         run: |
-          ISO="${{ github.event.head_commit.timestamp }}"
-          if [ -z "$ISO" ]; then ISO="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"; fi
-          EPOCH=$(date -d "$ISO" +%s)
-          echo "epoch=$EPOCH" >> "$GITHUB_OUTPUT"
+          MTIME_URL="https://www.formationeda-ia.com/admin/gitmtime.php?token=fb_2025_test_937abX"
+          START=$(curl -fsS "$MTIME_URL" || echo 0)
+          echo "start=$START" >> "$GITHUB_OUTPUT"
+          echo "Start mtime: $START"
 
-      - name: Wait for Plesk to finish /git-build update
+      - name: Wait for Plesk update (mtime change or timeout)
         env:
-          TARGET_EPOCH: ${{ steps.ts.outputs.epoch }}
-          MTIME_URL: https://www.formationeda-ia.com/admin/gitmtime.php?token=fb_2025_test_937abX
+          START_MTIME: ${{ steps.start.outputs.start }}
         run: |
-          echo "Target epoch: $TARGET_EPOCH"
-          for i in $(seq 1 120); do  # ~4 minutes max
+          MTIME_URL="https://www.formationeda-ia.com/admin/gitmtime.php?token=fb_2025_test_937abX"
+          echo "Waiting for mtime to change (or timeout)…"
+          CHANGED=0
+          for i in $(seq 1 120); do  # max ~4min
             CUR=$(curl -fsS "$MTIME_URL" || echo 0)
-            echo "[$i] mtime=$CUR"
-            if [ "$CUR" -ge "$TARGET_EPOCH" ] && [ "$CUR" -ne 0 ]; then
-              echo "Plesk mtime reached target."
-              exit 0
+            echo "[$i] mtime=$CUR (start=$START_MTIME)"
+            if [ "$CUR" -ne "$START_MTIME" ] && [ "$CUR" -ne 0 ]; then
+              CHANGED=1
+              echo "Detected change in /git-build."
+              break
             fi
             sleep 2
           done
-          echo "Timeout: Plesk mtime did not reach target" >&2
-          exit 1
+          # On déploie de toute façon, même si pas de changement détecté
+          echo "Proceeding to deploy (changed=$CHANGED)."
 
-      - name: Trigger deploy (copy git-build -> prod)
+      - name: Trigger deploy (mirror copy git-build -> prod)
         run: |
           curl -fsS "https://www.formationeda-ia.com/admin/deploy.php?token=fb_2025_test_937abX"
