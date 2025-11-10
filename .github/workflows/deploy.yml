@@ -1,0 +1,38 @@
+name: Deploy to Plesk (wait mtime)
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Compute push epoch
+        id: ts
+        run: |
+          ISO="${{ github.event.head_commit.timestamp }}"
+          if [ -z "$ISO" ]; then ISO="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"; fi
+          EPOCH=$(date -d "$ISO" +%s)
+          echo "epoch=$EPOCH" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for Plesk to finish /git-build update
+        env:
+          TARGET_EPOCH: ${{ steps.ts.outputs.epoch }}
+          MTIME_URL: https://www.formationeda-ia.com/admin/gitmtime.php?token=fb_2025_test_937abX
+        run: |
+          echo "Target epoch: $TARGET_EPOCH"
+          for i in $(seq 1 120); do  # ~4 minutes max
+            CUR=$(curl -fsS "$MTIME_URL" || echo 0)
+            echo "[$i] mtime=$CUR"
+            if [ "$CUR" -ge "$TARGET_EPOCH" ] && [ "$CUR" -ne 0 ]; then
+              echo "Plesk mtime reached target."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Timeout: Plesk mtime did not reach target" >&2
+          exit 1
+
+      - name: Trigger deploy (copy git-build -> prod)
+        run: |
+          curl -fsS "https://www.formationeda-ia.com/admin/deploy.php?token=fb_2025_test_937abX"
