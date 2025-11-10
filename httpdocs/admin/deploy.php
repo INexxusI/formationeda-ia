@@ -13,7 +13,7 @@ date_default_timezone_set('America/Toronto');
 
 $TOKEN  = 'fb_2025_test_937abX';               // <-- ton token
 $LOG    = __DIR__ . '/deploy.log';
-$DRY_RUN = true;  // <-- 1er run: true (juste logs). Quand OK, mets false pour agir.
+$DRY_RUN = false;  // <-- 1er run: true (juste logs). Quand OK, mets false pour agir.
 
 function logl(string $m): void {
   file_put_contents(__DIR__.'/deploy.log', date('c')." $m\n", FILE_APPEND);
@@ -164,5 +164,6 @@ foreach ($TARGETS as $t) {
 }
 
 logl("deploy end (mirror)");
+
 
 
