@@ -2,6 +2,11 @@
 // /httpdocs/admin/gitmtime.php
 // Renvoie l'epoch (secondes) de la dernière modification trouvée dans /git-build/{httpdocs,app,config}
 // Protégé par un token en query: ?token=XXX
+
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
+
 $TOKEN = 'fb_2025_test_937abX';
 
 if (($_GET['token'] ?? '') !== $TOKEN) {
