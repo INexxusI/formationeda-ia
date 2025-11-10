@@ -7,34 +7,72 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      # (Optionnel) Si tu as des secrets:
+      # - name: Show config
+      #   run: |
+      #     echo "URL: ${{ secrets.DEPLOY_URL }}"
+      #     echo "TOKEN length: ${#${{ secrets.DEPLOY_TOKEN }}}"
+
       - name: Read start mtime
         id: start
         run: |
           MTIME_URL="https://www.formationeda-ia.com/admin/gitmtime.php?token=fb_2025_test_937abX"
-          START=$(curl -fsS "$MTIME_URL" || echo 0)
-          echo "start=$START" >> "$GITHUB_OUTPUT"
+          START=$(curl -LfsS "$MTIME_URL" || echo 0)
           echo "Start mtime: $START"
+          echo "start=$START" >> "$GITHUB_OUTPUT"
 
-      - name: Wait for Plesk update (mtime change or timeout)
+      - name: Wait for Plesk update (mtime change OR timeout)
         env:
           START_MTIME: ${{ steps.start.outputs.start }}
         run: |
           MTIME_URL="https://www.formationeda-ia.com/admin/gitmtime.php?token=fb_2025_test_937abX"
-          echo "Waiting for mtime to change (or timeout)…"
-          CHANGED=0
-          for i in $(seq 1 120); do  # max ~4min
-            CUR=$(curl -fsS "$MTIME_URL" || echo 0)
+          echo "Waiting up to ~4min for /git-build mtime to change..."
+          for i in $(seq 1 120); do
+            CUR=$(curl -LfsS "$MTIME_URL" || echo 0)
             echo "[$i] mtime=$CUR (start=$START_MTIME)"
             if [ "$CUR" -ne "$START_MTIME" ] && [ "$CUR" -ne 0 ]; then
-              CHANGED=1
               echo "Detected change in /git-build."
               break
             fi
             sleep 2
           done
-          # On déploie de toute façon, même si pas de changement détecté
-          echo "Proceeding to deploy (changed=$CHANGED)."
+          echo "Proceed to deploy regardless."
 
-      - name: Trigger deploy (mirror copy git-build -> prod)
+      - name: Trigger deploy (POST first, then GET as fallback)
+        shell: bash
         run: |
-          curl -fsS "https://www.formationeda-ia.com/admin/deploy.php?token=fb_2025_test_937abX"
+          set +e   # on NE FAIT PAS échouer le job, on veut logger le statut/retour
+          DEPLOY_POST_URL="https://www.formationeda-ia.com/admin/deploy.php"
+          DEPLOY_GET_URL="https://www.formationeda-ia.com/admin/deploy.php?token=fb_2025_test_937abX&nocache=$(date +%s)"
+
+          echo "POST -> $DEPLOY_POST_URL"
+          # Si tu as des secrets, remplace la ligne suivante par: -d "token=${{ secrets.DEPLOY_TOKEN }}"
+          HTTP=$(curl -sS -X POST \
+            --connect-timeout 5 --max-time 25 --retry 3 --retry-delay 3 \
+            -A "GitHubActions/Deploy" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "token=fb_2025_test_937abX" \
+            -o /tmp/deploy_post_body.txt -w "%{http_code}" "$DEPLOY_POST_URL")
+          echo "HTTP=$HTTP"
+          echo "--- body (POST) ---"
+          sed -n '1,200p' /tmp/deploy_post_body.txt || true
+          echo "-------------------"
+
+          if [ "$HTTP" != "200" ]; then
+            echo "POST failed or not 200. Fallback to GET -> $DEPLOY_GET_URL"
+            HTTP2=$(curl -sS -L \
+              --connect-timeout 5 --max-time 25 --retry 3 --retry-delay 3 \
+              -A "GitHubActions/Deploy" \
+              -o /tmp/deploy_get_body.txt -w "%{http_code}" "$DEPLOY_GET_URL")
+            echo "HTTP2=$HTTP2"
+            echo "--- body (GET) ---"
+            sed -n '1,200p' /tmp/deploy_get_body.txt || true
+            echo "------------------"
+          fi
+
+      - name: Tail deploy.log (last 60 lines)
+        run: |
+          LOGURL="https://www.formationeda-ia.com/admin/deploy.log?nocache=$(date +%s)"
+          echo "Fetching last lines of deploy.log (via HTTP may not be allowed)."
+          # Si l’accès HTTP est interdit, on ne verra rien (c’est normal).
+          curl -LfsS "$LOGURL" | tail -n 60 || true
