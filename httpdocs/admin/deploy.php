@@ -49,11 +49,15 @@ $TARGETS = [
     'dst'      => $root.'/httpdocs',
     // Tout chemin commençant par l’un de ces préfixes sera PRÉSERVÉ côté serveur
     'preserve' => [
-      'admin/',         // tes scripts de déploiement
-      '.well-known/',   // ACME / certificats
-      'storage/',       // uploads/persistance si tu en as
-      'uploads/',       // idem
-      'tmp/',           // cache éventuel
+      'admin/',        // scripts de déploiement
+      '.well-known/',  // ACME / Let's Encrypt
+      '.htaccess',     // mets-le ici SEULEMENT s’il n’est pas dans le repo
+      '.user.ini',     // si présent
+      'uploads/',      // si tu as des uploads
+      'storage/',      // si tu en as
+      'tmp/',          // cache éventuel
+      'robots.txt',    // si pas dans le repo
+      'favicon.ico',   // si pas dans le repo
     ],
   ],
   [
@@ -161,3 +165,4 @@ foreach ($TARGETS as $t) {
 }
 
 logl("deploy end (mirror)");
+
