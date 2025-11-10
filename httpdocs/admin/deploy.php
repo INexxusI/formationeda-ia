@@ -1,23 +1,19 @@
 <?php
 /**
- * /httpdocs/admin/deploy.php  —  Sync "miroir" /git-build -> /httpdocs, /app, /config
+ * /httpdocs/admin/deploy.php — Sync "miroir" /git-build -> /httpdocs, /app, /config
  * - Copie/MAJ ce qui est dans le dépôt
  * - SUPPRIME ce qui n’est plus dans le dépôt (hors "preserve")
- * - Répond "OK" immédiatement, puis logue tout dans deploy.log
+ * - Répond "OK" immédiatement (après auth), puis logue tout dans deploy.log
  */
-header('Content-Type: text/plain');
-echo "OK\n";
-if (function_exists('fastcgi_finish_request')) { fastcgi_finish_request(); }
-ignore_user_abort(true);
 
 declare(strict_types=1);
 error_reporting(E_ALL);
 ini_set('display_errors', '0');
 date_default_timezone_set('America/Toronto');
 
-$TOKEN  = 'fb_2025_test_937abX';               // <-- ton token
-$LOG    = __DIR__ . '/deploy.log';
-$DRY_RUN = false;  // <-- 1er run: true (juste logs). Quand OK, mets false pour agir.
+$TOKEN   = 'fb_2025_test_937abX';     // <-- ton token
+$DRY_RUN = false;                      // false pour agir (true = simulateur)
+$LOG     = __DIR__ . '/deploy.log';
 
 function logl(string $m): void {
   file_put_contents(__DIR__.'/deploy.log', date('c')." $m\n", FILE_APPEND);
@@ -34,11 +30,10 @@ if ($token !== $TOKEN) {
 }
 
 // --- Réponse immédiate à l'appelant (GitHub Action) ---
-ignore_user_abort(true);
 header('Content-Type: text/plain');
 echo "OK\n";
-flush();
-if (function_exists('fastcgi_finish_request')) fastcgi_finish_request();
+if (function_exists('fastcgi_finish_request')) { fastcgi_finish_request(); }
+ignore_user_abort(true);
 
 // --- Chemins de base ---
 $scriptDir = __DIR__;               // /httpdocs/admin
@@ -46,12 +41,40 @@ $httpdocs  = dirname($scriptDir);   // /httpdocs
 $root      = dirname($httpdocs);    // /
 $build     = $root . '/git-build';  // /git-build
 
+// --- Log du commit SHA actuellement présent dans /git-build ---
+$sha = 'unknown';
+$headFile = $build.'/.git/HEAD';
+if (is_file($headFile)) {
+  $head = trim((string)@file_get_contents($headFile));
+  if (preg_match('~^[0-9a-f]{40}$~', $head)) {
+    $sha = $head;
+  } elseif (strpos($head, 'ref:') === 0) {
+    $ref = trim(substr($head, 4));             // ex: refs/heads/main
+    $refFile = $build.'/.git/'.$ref;
+    if (is_file($refFile)) {
+      $shaCand = trim((string)@file_get_contents($refFile));
+      if (preg_match('~^[0-9a-f]{40}$~', $shaCand)) $sha = $shaCand;
+    } else {
+      // fallback packed-refs
+      $packed = $build.'/.git/packed-refs';
+      if (is_file($packed)) {
+        foreach (file($packed, FILE_IGNORE_NEW_LINES) as $line) {
+          if ($line === '' || $line[0] === '#') continue;
+          if (preg_match('~^([0-9a-f]{40})\s+(.+)$~', $line, $m) && $m[2] === $ref) {
+            $sha = $m[1]; break;
+          }
+        }
+      }
+    }
+  }
+}
+logl("deploy start (mirror): ROOT=$root BUILD=$build DRY_RUN=".($DRY_RUN?'true':'false')." sha=$sha");
+
 // --- Cibles & exceptions de suppression (relatives à la cible) ---
 $TARGETS = [
   [
     'src'      => $build.'/httpdocs',
     'dst'      => $root.'/httpdocs',
-    // Tout chemin commençant par l’un de ces préfixes sera PRÉSERVÉ côté serveur
     'preserve' => [
       'admin/',        // scripts de déploiement
       '.well-known/',  // ACME / Let's Encrypt
@@ -66,12 +89,12 @@ $TARGETS = [
   [
     'src'      => $build.'/app',
     'dst'      => $root.'/app',
-    'preserve' => [],   // adapte si tu as des dossiers runtime dans app/
+    'preserve' => [],
   ],
   [
     'src'      => $build.'/config',
     'dst'      => $root.'/config',
-    'preserve' => [],   // idem
+    'preserve' => [],
   ],
 ];
 
@@ -89,14 +112,18 @@ function copy_update(string $src, string $dst): void {
     if (is_dir($s)) {
       copy_update($s, $d);
     } else {
-      // Copie si absent ou différent (on compare taille/mtime pour limiter I/O)
+      // Copie si absent ou différent (compare taille + mtime)
       $need = !is_file($d) || filesize($d) !== filesize($s) || (@filemtime($d) !== @filemtime($s));
       if ($need) {
-        if (@copy($s, $d)) {
-          @touch($d, @filemtime($s) ?: time());
-          logl("PUT: $d");
+        if (!$GLOBALS['DRY_RUN']) {
+          if (@copy($s, $d)) {
+            @touch($d, @filemtime($s) ?: time());
+            logl("PUT: $d");
+          } else {
+            logl("copy FAIL: $s -> $d");
+          }
         } else {
-          logl("copy FAIL: $s -> $d");
+          logl("PUT (dry-run): $d");
         }
       }
     }
@@ -110,17 +137,16 @@ function rr_delete(string $path): void {
     );
     foreach ($it as $item) {
       $p = $item->getPathname();
-      if ($item->isDir() && !is_link($p)) rmdir($p); else unlink($p);
+      if ($item->isDir() && !is_link($p)) @rmdir($p); else @unlink($p);
     }
-    rmdir($path);
+    @rmdir($path);
   } else {
     @unlink($path);
   }
 }
 function pathRel(string $base, string $absolute): string {
   $base = rtrim($base, '/').'/';
-  if (strpos($absolute, $base) === 0) return substr($absolute, strlen($base));
-  return $absolute;
+  return (strpos($absolute, $base) === 0) ? substr($absolute, strlen($base)) : $absolute;
 }
 function isPreserved(string $rel, array $preservePrefixes): bool {
   $rel = ltrim(str_replace('\\','/',$rel), '/');
@@ -132,8 +158,6 @@ function isPreserved(string $rel, array $preservePrefixes): bool {
 }
 
 // --- Déploiement (miroir) ---
-logl("deploy start (mirror): ROOT=$root BUILD=$build DRY_RUN=".($DRY_RUN?'true':'false'));
-
 foreach ($TARGETS as $t) {
   $src = $t['src']; $dst = $t['dst']; $preserve = $t['preserve'];
   logl("SYNC $src -> $dst");
@@ -141,7 +165,7 @@ foreach ($TARGETS as $t) {
   // 1) Copie/MAJ depuis src -> dst
   copy_update($src, $dst);
 
-  // 2) SUPPRESSION des éléments qui n’existent plus dans src (hors 'preserve')
+  // 2) SUPPRESSION des éléments absents de src (hors 'preserve')
   if (is_dir($dst)) {
     $it = new RecursiveIteratorIterator(
       new RecursiveDirectoryIterator($dst, FilesystemIterator::SKIP_DOTS),
@@ -153,8 +177,6 @@ foreach ($TARGETS as $t) {
       if (isPreserved($rel, $preserve)) continue;
 
       $sAbs = $src . '/' . $rel;
-
-      // Si la contrepartie n'existe pas dans le dépôt -> supprimer
       if (!file_exists($sAbs)) {
         if ($DRY_RUN) {
           logl("DELETE (dry-run): $dAbs");
@@ -168,6 +190,8 @@ foreach ($TARGETS as $t) {
 }
 
 logl("deploy end (mirror)");
+
+
 
 
 
