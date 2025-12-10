@@ -41,13 +41,62 @@
     .btn-cta:hover { background:#1d4ed8; }
     .btn-ghost { border:1px solid #d1d5db; }
 	
-	.prof-head { display:flex; gap:12px; align-items:flex-start; }
-	.prof-head .avatar-img { width:56px; height:56px; border-radius:50%; object-fit:cover; border:2px solid #e5e7eb; }
-	.bubble { background:#fff; border:1px solid #e5e7eb; border-radius:16px; padding:12px 14px; box-shadow:0 1px 2px rgba(0,0,0,.03); }
-	.bubble:after { content:""; position:relative; display:block; width:0; height:0; border:10px solid transparent; border-right-color:#fff; margin-left:-10px; top:-10px; }
-	.title { font-weight:800; letter-spacing:.3px; }
+.prof-head {
+  display:flex;
+  gap:1.5rem;
+  align-items:center;
+}
 
-	
+/* Gros avatar rond */
+.prof-head .avatar-img {
+  width:180px;
+  height:180px;
+  border-radius:50%;
+  object-fit:cover;
+  border:2px solid #e5e7eb;
+  box-shadow:0 10px 25px rgba(15,23,42,0.15);
+}
+
+/* Bulle bleue utilisée sur l'accueil */
+.bubble-prof {
+  background:#e9f5ff;
+  border-radius:24px;
+  padding:1.5rem 1.75rem;
+  font-size:1rem;
+  line-height:1.4;
+  box-shadow:0 2px 6px rgba(15,23,42,0.08);
+}
+
+/* On garde .bubble si tu l'utilises ailleurs */
+.bubble {
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:16px;
+  padding:12px 14px;
+  box-shadow:0 1px 2px rgba(0,0,0,.03);
+}
+.bubble:after {
+  content:"";
+  position:relative;
+  display:block;
+  width:0;
+  height:0;
+  border:10px solid transparent;
+  border-right-color:#fff;
+  margin-left:-10px;
+  top:-10px;
+}
+
+/* Avatar un peu plus petit sur mobile */
+@media (max-width: 992px){
+  .prof-head .avatar-img {
+    width:140px;
+    height:140px;
+  }
+}
+
+.title { font-weight:800; letter-spacing:.3px; }
+
   </style>
 </head>
 <body>
