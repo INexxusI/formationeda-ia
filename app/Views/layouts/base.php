@@ -90,17 +90,7 @@
   padding:12px 14px;
   box-shadow:0 1px 2px rgba(0,0,0,.03);
 }
-.bubble:after {
-  content:"";
-  position:relative;
-  display:block;
-  width:0;
-  height:0;
-  border:10px solid transparent;
-  border-right-color:#fff;
-  margin-left:-10px;
-  top:-10px;
-}
+
 
 /* Avatar un peu plus petit sur mobile */
 @media (max-width: 992px){
