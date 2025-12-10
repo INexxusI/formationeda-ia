@@ -122,4 +122,6 @@ body{
     height: 140px;
   }
 }
-
+body {
+  background: #ffe6e6 !important;
+}
