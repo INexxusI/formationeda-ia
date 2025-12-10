@@ -2,38 +2,77 @@
   --bubble-bg:#f8f9fa;
   --bubble-border:#dee2e6;
 }
-body{ background:#ffffff; }
-.chat-container{ display:flex; gap:1rem; }
-.left-pane, .right-pane{ flex:1; }
+
+body{
+  background:#ffffff;
+}
+
+/* ===== Bloc chat Prof IA ===== */
+
+.chat-container{
+  display:flex;
+  align-items:center;         /* centre verticalement avatar + bulle */
+  gap:1.5rem;                 /* un peu plus d’espace que 1rem */
+}
+
+/* Avatar à gauche, largeur fixe */
+.left-pane{
+  flex:0 0 auto;
+}
+
+/* Bulle à droite, prend le reste de l’espace */
+.right-pane{
+  flex:1 1 auto;
+}
+
+/* Bulle de base */
 .bubble{
-  display:inline-block;
+  display:block;
   background:var(--bubble-bg);
   border:1px solid var(--bubble-border);
-  border-radius:18px;
-  padding:14px 16px;
+  border-radius:24px;         /* plus arrondi, comme sur la capture */
+  padding:16px 20px;          /* bulle plus “massive” */
   max-width:100%;
   box-shadow:0 2px 6px rgba(0,0,0,0.04);
 }
+
+/* Bulle du prof (bleu pâle) */
 .bubble.teacher{
   background:#e9f5ff;
   border-color:#cfe8ff;
 }
+
 .bubble:after{
   content:"";
   position:absolute;
-  width:0;height:0;
+  width:0;
+  height:0;
 }
+
+/* Card globale */
 .chat-card{
   border-radius:1rem;
   overflow:hidden;
 }
+
+/* Avatar du prof */
 .avatar{
-  width:140px; height:140px;
+  width:140px;
+  height:140px;
   border-radius:50%;
   object-fit:cover;
   border:2px solid #e9ecef;
 }
+
+/* Responsive : on empile sur petit écran */
 @media (max-width: 992px){
-  .chat-container{ flex-direction:column; }
-  .avatar{ width:120px; height:120px; }
+  .chat-container{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .avatar{
+    width:120px;
+    height:120px;
+  }
 }
