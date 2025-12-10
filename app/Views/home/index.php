@@ -47,18 +47,17 @@ $styles = AiStyleService::profiles();
 
     <!-- ======== PANEL DROIT : Prof IA ======== -->
     <aside class="panel right animate-right">
-      <div class="prof-head mb-3">
-        <img class="avatar-img" src="/assets/img/prof-ai.png" alt="Prof IA">
-        <div>
-          <div class="small text-muted">Ton tuteur</div>
-          <div class="fw-bold" id="profTone">Prof IA</div>
-        </div>
-      </div>
+<div class="prof-head mb-4">
+  <img class="avatar-img" src="/assets/img/prof-ai.png" alt="Prof IA">
 
-<div class="bubble-prof mb-4">
-  Bienvenue ! Je serai ton accompagnateur.  
-  <br>Choisis ton style de prof ci-dessous.
+  <div class="bubble-prof">
+    <div class="small text-muted">Ton tuteur</div>
+    <div class="fw-bold mb-2" id="profTone">Prof IA</div>
+    Bienvenue ! Je serai ton accompagnateur.<br>
+    Choisis ton style de prof ci-dessous.
+  </div>
 </div>
+
 
       <div class="mb-3"><span class="prof-name">Choisis ton Prof IA</span></div>
       <div class="d-flex gap-2 flex-wrap">
