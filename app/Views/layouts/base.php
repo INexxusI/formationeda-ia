@@ -59,13 +59,28 @@
 
 /* Bulle bleue utilisée sur l'accueil */
 .bubble-prof {
+  flex: 1;
   background:#e9f5ff;
   border-radius:24px;
   padding:1.5rem 1.75rem;
   font-size:1rem;
   line-height:1.4;
   box-shadow:0 2px 6px rgba(15,23,42,0.08);
+  position: relative; /* pour pouvoir placer le triangle */
 }
+
+/* Triangle de la bulle, même couleur que la bulle */
+.bubble-prof::after {
+  content: "";
+  position: absolute;
+  left: -16px;         /* décale le triangle vers l’avatar */
+  top: 24px;           /* ajuste la hauteur si besoin */
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-right-color: #e9f5ff;  /* même couleur que la bulle */
+}
+
 
 /* On garde .bubble si tu l'utilises ailleurs */
 .bubble {
