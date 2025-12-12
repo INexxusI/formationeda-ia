@@ -30,6 +30,7 @@ body{
   padding-top:0.25rem;
   padding-bottom:0.25rem;
   min-height:44px;
+  margin-bottom: 0.35rem; /* essaie 0.25rem si tu veux plus serré */
 }
 .navbar-brand,
 .navbar .nav-link{
