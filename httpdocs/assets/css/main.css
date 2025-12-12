@@ -1,7 +1,10 @@
-/* AVANT */
-body{font-family:Inter,Arial,sans-serif;background:#fff;color:#111;text-align:center;padding-top:3rem}
-/* APRÈS */
-body{font-family:Inter,Arial,sans-serif;background:#fff;color:#111;text-align:left;padding-top:3rem}
+body{
+  font-family:Inter,Arial,sans-serif;
+  background:#fff;
+  color:#111;
+  text-align:left;
+  padding-top:0.75rem; /* ou 0.5rem si tu veux très serré */
+}
 
 /* Garde .panel et .bubble de base */
 .panel {
