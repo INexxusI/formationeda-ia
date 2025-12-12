@@ -48,6 +48,6 @@ body{
 .navbar + .container,
 .navbar + .container-fluid,
 .navbar + main{
-  padding-top: 0.25rem !important; /* essaie 0.15rem si tu veux encore plus serré */
+  padding-top: 0.30rem !important; /* essaie 0.15rem si tu veux encore plus serré */
   margin-top: 0 !important;
 }
