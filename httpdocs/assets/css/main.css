@@ -26,7 +26,15 @@ body{
   /* tu peux même laisser vide si tu veux,
      base.php override tout */
 }
-header{
+.navbar{
   padding-top:0.25rem;
   padding-bottom:0.25rem;
+  min-height:44px;
 }
+.navbar-brand,
+.navbar .nav-link{
+  padding-top:0.25rem;
+  padding-bottom:0.25rem;
+  line-height:1.1;
+}
+
