@@ -26,28 +26,25 @@ body{
   /* tu peux même laisser vide si tu veux,
      base.php override tout */
 }
+/* Navbar: plus mince */
 .navbar{
-  padding-top:0.25rem;
-  padding-bottom:0.25rem;
-  min-height:44px;
-}
-.navbar-brand,
-.navbar .nav-link{
-  padding-top:0.25rem;
-  padding-bottom:0.25rem;
-  line-height:1.1;
-}
-.navbar + .container{
-  padding-top: 0.15rem;
-}
-.navbar{
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  min-height: 44px;
   margin-bottom: 0 !important;
 }
 
-/* 2) Réduire l'espace du premier bloc après la navbar (Bootstrap) */
+.navbar-brand,
+.navbar .nav-link{
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  line-height: 1.1;
+}
+
+/* Réduit l'espace juste après la navbar */
 .navbar + .container,
 .navbar + .container-fluid,
 .navbar + main{
-  padding-top: 0.35rem !important; /* essaie 0.15rem si tu veux encore plus serré */
+  padding-top: 0.15rem !important; /* ajuste ici */
   margin-top: 0 !important;
 }
