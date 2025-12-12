@@ -45,6 +45,6 @@ body{
 .navbar + .container,
 .navbar + .container-fluid,
 .navbar + main{
-  padding-top: 0.15rem !important; /* ajuste ici */
+  padding-top: 0.45rem !important; /* ajuste ici */
   margin-top: 0 !important;
 }
