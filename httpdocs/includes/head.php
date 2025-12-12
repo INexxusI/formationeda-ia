@@ -15,7 +15,7 @@
 <body class="pb-5">
 <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
   <div class="container">
-    <a class="navbar-brand fw-semibold" href="/index.php">JRPG Prépa</a>
+    <a class="navbar-brand fw-semibold" href="/index.php">Test de développement général TDG</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
       <span class="navbar-toggler-icon"></span>
     </button>
