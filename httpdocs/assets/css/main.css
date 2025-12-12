@@ -40,3 +40,14 @@ body{
 .navbar + .container{
   padding-top: 0.15rem;
 }
+.navbar{
+  margin-bottom: 0 !important;
+}
+
+/* 2) Réduire l'espace du premier bloc après la navbar (Bootstrap) */
+.navbar + .container,
+.navbar + .container-fluid,
+.navbar + main{
+  padding-top: 0.25rem !important; /* essaie 0.15rem si tu veux encore plus serré */
+  margin-top: 0 !important;
+}
