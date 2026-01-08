@@ -114,15 +114,8 @@
     </div>
   </main>
 
-  <footer class="py-4 border-top bg-white">
-    <div class="container d-flex justify-content-between align-items-center">
-      <small class="text-muted">© FormationEDA – Prototype JRPG</small>
-      <div class="d-flex gap-3 small">
-        <span>Thème clair</span>
-        <a class="link-secondary text-decoration-none" href="https://getbootstrap.com/">Bootstrap 5</a>
-      </div>
-    </div>
-  </footer>
+<?php require __DIR__ . '/../partials/footer.php'; ?>
+
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="/assets/js/app.js?v=2025-10-09-1"></script>
