@@ -18,10 +18,8 @@
   <link rel="stylesheet" href="/assets/css/main.css?v=2025-10-09-1">
 
   <!-- MathJax pour \( ... \) -->
-  <script>
-    window.MathJax = { tex: { inlineMath: [['\\(','\\)']] }, svg: { fontCache: 'global' } };
-  </script>
-  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+	
+<?php require __DIR__ . '/../partials/mathjax.php'; ?>
 
   <style>
     /* Fond clair doux + typographie */
