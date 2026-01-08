@@ -106,7 +106,7 @@
 </head>
 <body>
 
-require __DIR__ . '/../partials/navbar.php';
+<?php require __DIR__ . '/../partials/navbar.php'; ?>
 
   <main class="py-4">
     <div class="container">
