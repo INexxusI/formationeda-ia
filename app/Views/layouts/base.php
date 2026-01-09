@@ -21,7 +21,8 @@
 	
 <?php require __DIR__ . '/../partials/mathjax.php'; ?>
 
-  
+  <link rel="stylesheet" href="/assets/css/theme.css?v=2026-01-08-1">
+
 </head>
 <body>
 
